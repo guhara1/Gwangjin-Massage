@@ -1,0 +1,5 @@
+﻿User-agent: *
+Allow: /
+Disallow: /tools/
+
+Sitemap: https://gwangjin-massage.pages.dev/sitemap.xml
