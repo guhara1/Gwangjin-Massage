@@ -68,7 +68,7 @@ function E([string]$Text) {
 }
 
 function Clean-Output {
-  $paths = @("gwangjin-gu", "course", "reservation", "guide", "reviews", "customer", "privacy", "terms", "index.html", "sitemap.xml", "robots.txt", "site.webmanifest", ".nojekyll")
+  $paths = @("gwangjin-gu", "course", "reservation", "guide", "reviews", "customer", "privacy", "terms", "index.html", "sitemap.xml", "robots.txt", "site.webmanifest", "favicon.svg", ".nojekyll")
   foreach ($p in $paths) {
     $full = Join-Path $Root $p
     if (Test-Path -LiteralPath $full) {
@@ -191,7 +191,7 @@ function Page([string]$Path, [string]$Title, [string]$Desc, [string]$Active, [st
     )
   }
   $json = $jsonObj | ConvertTo-Json -Depth 8 -Compress
-  return "<!doctype html><html lang=""ko""><head><meta charset=""utf-8""><meta name=""viewport"" content=""width=device-width,initial-scale=1""><title>$(E $Title)</title><meta name=""description"" content=""$(E $Desc)""><link rel=""canonical"" href=""$canonical""><meta property=""og:title"" content=""$(E $Title)""><meta property=""og:description"" content=""$(E $Desc)""><meta property=""og:url"" content=""$canonical""><meta property=""og:site_name"" content=""$(E $Brand)""><style>$Css</style><script type=""application/ld+json"">$json</script></head><body>$(HeaderHtml $Active)$Body$(FooterHtml)<a class=""fab"" href=""tel:$PhoneTel"">예약 문의</a><script>document.querySelector('.toggle')?.addEventListener('click',function(){document.querySelector('.menu').classList.toggle('open')})</script></body></html>"
+  return "<!doctype html><html lang=""ko""><head><meta charset=""utf-8""><meta name=""viewport"" content=""width=device-width,initial-scale=1""><title>$(E $Title)</title><meta name=""description"" content=""$(E $Desc)""><meta name=""naver-site-verification"" content=""731294e13f4a5bbf6419b94eaee2bdd6b8e56af8""><link rel=""canonical"" href=""$canonical""><link rel=""icon"" href=""/favicon.svg"" type=""image/svg+xml""><link rel=""manifest"" href=""/site.webmanifest""><meta name=""theme-color"" content=""#0b0c10""><meta property=""og:title"" content=""$(E $Title)""><meta property=""og:description"" content=""$(E $Desc)""><meta property=""og:url"" content=""$canonical""><meta property=""og:site_name"" content=""$(E $Brand)""><style>$Css</style><script type=""application/ld+json"">$json</script></head><body>$(HeaderHtml $Active)$Body$(FooterHtml)<a class=""fab"" href=""tel:$PhoneTel"">예약 문의</a><script>document.querySelector('.toggle')?.addEventListener('click',function(){document.querySelector('.menu').classList.toggle('open')})</script></body></html>"
 }
 
 function Write-Page([string]$Path, [string]$Title, [string]$Desc, [string]$Active, [string]$Body) {
@@ -1069,7 +1069,8 @@ $urls = $urls | Sort-Object -Unique
 $sitemapItems = ($urls | ForEach-Object { "  <url><loc>$BaseUrl$_</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>" }) -join "`n"
 "<?xml version=""1.0"" encoding=""UTF-8""?>`n<urlset xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">`n$sitemapItems`n</urlset>" | Set-Content -LiteralPath (Join-Path $Root "sitemap.xml") -Encoding UTF8
 "User-agent: *`nAllow: /`nDisallow: /tools/`n`nSitemap: $BaseUrl/sitemap.xml" | Set-Content -LiteralPath (Join-Path $Root "robots.txt") -Encoding UTF8
-"{`"name`":`"$Brand`",`"short_name`":`"플러스`",`"start_url`":`"/`",`"display`":`"standalone`",`"lang`":`"ko-KR`",`"theme_color`":`"#0b0c10`"}" | Set-Content -LiteralPath (Join-Path $Root "site.webmanifest") -Encoding UTF8
+"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 64 64""><rect width=""64"" height=""64"" rx=""14"" fill=""#0b0c10""/><circle cx=""32"" cy=""32"" r=""25"" fill=""url(#g)""/><path fill=""#17110a"" d=""M22 44V18h14c6 0 10 4 10 9s-4 9-10 9h-6v8h-8Zm8-15h5c2 0 4-1 4-3s-2-3-4-3h-5v6Z""/><defs><linearGradient id=""g"" x1=""10"" x2=""54"" y1=""8"" y2=""56""><stop stop-color=""#f0cf8a""/><stop offset=""1"" stop-color=""#d98975""/></linearGradient></defs></svg>" | Set-Content -LiteralPath (Join-Path $Root "favicon.svg") -Encoding UTF8
+"{`"name`":`"$Brand`",`"short_name`":`"플러스`",`"start_url`":`"/`",`"display`":`"standalone`",`"lang`":`"ko-KR`",`"theme_color`":`"#0b0c10`",`"icons`":[{`"src`":`"/favicon.svg`",`"sizes`":`"any`",`"type`":`"image/svg+xml`"}]}" | Set-Content -LiteralPath (Join-Path $Root "site.webmanifest") -Encoding UTF8
 "" | Set-Content -LiteralPath (Join-Path $Root ".nojekyll") -Encoding UTF8
 
 Write-Host "Build complete: $($urls.Count) pages"
