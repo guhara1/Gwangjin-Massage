@@ -167,7 +167,7 @@ $Css = @"
 "@
 
 function FooterHtml {
-  return "<footer class=""footer""><div class=""wrap footer-grid""><div><b class=""grad"">$(E $Brand)</b><p>광진구 방문 마사지 예약 안내. 메뉴명은 짧게 구성하고 각 상세 페이지에서 정확한 지역 키워드를 안내합니다.</p><p>상담: <a href=""tel:$PhoneTel"">$PhoneDisplay</a> · $Hours</p></div><div><b>지역</b><a href=""/gwangjin-gu/area/"">지역별 안내</a><a href=""/gwangjin-gu/stations/"">지하철역별 안내</a></div><div><b>예약</b><a href=""/course/"">코스안내</a><a href=""/reservation/"">예약안내</a><a href=""/guide/"">이용가이드</a></div><div><b>고객센터</b><a href=""/customer/"">공지사항</a><a href=""/customer/faq/"">FAQ</a><a href=""/privacy/"">개인정보처리방침</a><a href=""/terms/"">이용약관</a></div></div></footer>"
+  return "<footer class=""footer""><div class=""wrap footer-grid""><div><b class=""grad"">$(E $Brand)</b><p>광진구 방문 마사지 예약 안내. 지역, 역세권, 코스, 예약 전 확인사항을 차례대로 안내합니다.</p><p>상담: <a href=""tel:$PhoneTel"">$PhoneDisplay</a> · $Hours</p></div><div><b>지역</b><a href=""/gwangjin-gu/area/"">지역별 안내</a><a href=""/gwangjin-gu/stations/"">지하철역별 안내</a></div><div><b>예약</b><a href=""/course/"">코스안내</a><a href=""/reservation/"">예약안내</a><a href=""/guide/"">이용가이드</a></div><div><b>고객센터</b><a href=""/customer/"">공지사항</a><a href=""/customer/faq/"">FAQ</a><a href=""/privacy/"">개인정보처리방침</a><a href=""/terms/"">이용약관</a></div></div></footer>"
 }
 
 function Page([string]$Path, [string]$Title, [string]$Desc, [string]$Active, [string]$Body) {
@@ -201,7 +201,7 @@ function Write-Page([string]$Path, [string]$Title, [string]$Desc, [string]$Activ
 }
 
 function Hero([string]$Eyebrow, [string]$H1, [string]$Lead, [string]$PrimaryHref, [string]$PrimaryLabel) {
-  return "<section class=""hero""><div class=""wrap hero-inner""><div><span class=""eyebrow"">$(E $Eyebrow)</span><h1>$H1</h1><p class=""lead"">$(E $Lead)</p><div class=""actions""><a class=""btn primary"" href=""$PrimaryHref"">$(E $PrimaryLabel)</a><a class=""btn"" href=""/gwangjin-gu/area/"">지역별 안내</a><a class=""btn"" href=""/gwangjin-gu/stations/"">역별 안내</a></div></div><div class=""panel""><div class=""k"">PLUS MASSAGE</div><h2>광진구 예약 체크</h2><div class=""row""><span>상호</span><b>$(E $Brand)</b></div><div class=""row""><span>상담</span><b>$Hours</b></div><div class=""row""><span>대표 키워드</span><b>$(E $PrimaryKeyword)</b></div><a class=""btn primary"" href=""tel:$PhoneTel"" style=""margin-top:18px"">전화 예약</a></div></div></section>"
+  return "<section class=""hero""><div class=""wrap hero-inner""><div><span class=""eyebrow"">$(E $Eyebrow)</span><h1>$H1</h1><p class=""lead"">$(E $Lead)</p><div class=""actions""><a class=""btn primary"" href=""$PrimaryHref"">$(E $PrimaryLabel)</a><a class=""btn"" href=""/gwangjin-gu/area/"">지역별 안내</a><a class=""btn"" href=""/gwangjin-gu/stations/"">역별 안내</a></div></div><div class=""panel""><div class=""k"">PLUS MASSAGE</div><h2>광진구 예약 체크</h2><div class=""row""><span>상호</span><b>$(E $Brand)</b></div><div class=""row""><span>상담</span><b>$Hours</b></div><div class=""row""><span>안내</span><b>지역·시간·코스 확인</b></div><a class=""btn primary"" href=""tel:$PhoneTel"" style=""margin-top:18px"">전화 예약</a></div></div></section>"
 }
 
 function Cards([array]$Items) {
@@ -214,7 +214,21 @@ function Cards([array]$Items) {
 
 function FaqHtml([array]$Faqs) {
   $html = ""
-  foreach ($f in $Faqs) { $html += "<details><summary>$(E $f[0])</summary><p>$(E $f[1])</p></details>" }
+  $items = @()
+  if ($Faqs.Count -gt 0 -and $Faqs[0] -is [string]) {
+    for ($i = 0; $i -lt ($Faqs.Count - 1); $i += 2) {
+      $items += @{ Q = $Faqs[$i]; A = $Faqs[$i + 1] }
+    }
+  } else {
+    foreach ($f in $Faqs) {
+      if ($f -is [hashtable]) {
+        $items += $f
+      } elseif ($f.Count -ge 2) {
+        $items += @{ Q = $f[0]; A = $f[1] }
+      }
+    }
+  }
+  foreach ($item in $items) { $html += "<details><summary>$(E $item.Q)</summary><p>$(E $item.A)</p></details>" }
   return "<section class=""block""><div class=""wrap content""><span class=""eyebrow"">FAQ</span><h2 class=""sec"">자주 묻는 질문</h2>$html</div></section>"
 }
 
@@ -231,6 +245,8 @@ function StandardContent([string]$Eyebrow, [string]$H1, [string]$Lead, [array]$S
         $body += "<ul>"
         foreach ($li in $p) { $body += "<li>$li</li>" }
         $body += "</ul>"
+      } elseif ($p -match '^<a\s') {
+        $body += "<p>$p</p>"
       } else {
         $body += "<p>$(E $p)</p>"
       }
@@ -244,7 +260,13 @@ function StandardContent([string]$Eyebrow, [string]$H1, [string]$Lead, [array]$S
 
 function Build-SimplePage([string]$Path, [string]$Active, [string]$Title, [string]$Heading, [string]$Desc, [array]$Links) {
   $cards = @()
-  foreach ($l in $Links) { $cards += @{ Href=$l[0]; Kicker=$l[1]; Title=$l[2]; Text=$l[3] } }
+  if ($Links.Count -gt 0 -and $Links[0] -is [string]) {
+    for ($i = 0; $i -lt ($Links.Count - 3); $i += 4) {
+      $cards += @{ Href=$Links[$i]; Kicker=$Links[$i + 1]; Title=$Links[$i + 2]; Text=$Links[$i + 3] }
+    }
+  } else {
+    foreach ($l in $Links) { $cards += @{ Href=$l[0]; Kicker=$l[1]; Title=$l[2]; Text=$l[3] } }
+  }
   $body = "$(Hero $Brand $Heading $Desc $Path '자세히 보기')<section class=""block""><div class=""wrap"">$(Cards $cards)</div></section>"
   Write-Page $Path $Title $Desc $Active $body
 }
@@ -424,7 +446,7 @@ function Unique-Notes([string]$Title, [string]$Desc, [string]$Path) {
     "junggok-gunja-area" = @(
       "중곡·군자권역은 5호선과 7호선 이용 흐름이 겹치는 곳이라 상담 시 역 기준과 실제 주소 기준을 분리해 확인하는 편이 좋습니다. 군자역 주변인지, 중곡역 쪽 주거지인지에 따라 안내 동선이 달라질 수 있습니다.",
       "이 권역은 주거지 문의와 대학가·상권 문의가 함께 들어올 수 있어 예약 목적을 먼저 확인합니다. 조용한 주거 공간 이용인지, 퇴근 후 짧은 시간 예약인지에 따라 코스 선택 기준이 달라집니다.",
-      "중곡동은 용마산로와 시장 생활권을 기준으로 세부 위치 확인이 필요하고, 군자동은 능동로와 세종대학교 생활권을 함께 봅니다. 두 동을 하나로 묶되 상세 페이지는 별도로 두어 중복을 피했습니다.",
+      "중곡동은 용마산로와 시장 생활권을 기준으로 세부 위치 확인이 필요하고, 군자동은 능동로와 세종대학교 생활권을 함께 봅니다. 두 동을 하나로 묶되 상세 페이지는 별도로 두어 안내가 겹치지 않게 했습니다.",
       "중곡·군자권역에서는 북쪽 주거지와 군자역 환승 생활권을 같은 문서에서 비교할 수 있어야 합니다. 권역 페이지는 두 동의 차이를 보여 주고, 상세 판단은 중곡동 또는 군자동 페이지로 넘깁니다.",
       "이 권역의 예약 전 체크 포인트는 역 접근성보다 실제 주소 접근성입니다. 같은 군자역 생활권이라도 중곡동 방향과 능동로 방향은 안내 기준이 다를 수 있습니다."
     )
@@ -432,7 +454,7 @@ function Unique-Notes([string]$Title, [string]$Desc, [string]$Path) {
       "능동·화양권역은 어린이대공원과 대학가 생활권이 가까워 주간과 야간 문의 성격이 다르게 나타날 수 있습니다. 공원 인근 주거지인지, 건대 상권과 가까운 위치인지 상담에서 구분합니다.",
       "능동은 비교적 조용한 생활권 설명이 필요하고, 화양동은 건대입구 상권과 연결된 안내가 필요합니다. 같은 권역 안에서도 사용자가 찾는 정보가 다르기 때문에 동별 상세 페이지로 나누었습니다.",
       "이 권역은 어린이대공원역, 건대입구역, 세종대학교 생활권을 함께 비교하는 사용자가 많을 수 있어 역세권 안내와 지역 안내를 동시에 연결했습니다.",
-      "능동·화양권역은 공원 주변의 차분한 주거지와 건대 주변의 활발한 상권을 동시에 포함합니다. 이 차이를 설명하지 않으면 단순 지역명 치환 문서처럼 보일 수 있습니다.",
+      "능동·화양권역은 공원 주변의 차분한 주거지와 건대 주변의 활발한 상권을 동시에 포함합니다. 이 차이를 설명해야 실제 위치를 판단하기 쉽습니다.",
       "예약 상담에서는 공원 인근 주소인지, 대학가 상권 쪽인지, 주거지 안쪽인지 먼저 나눠 확인합니다. 같은 권역이어도 방문 환경이 다르기 때문입니다."
     )
     "guui-gwangjang-area" = @(
@@ -441,15 +463,15 @@ function Unique-Notes([string]$Title, [string]$Desc, [string]$Path) {
       "강변역과 광나루역 주변은 같은 광진 동부권이어도 방문 조건이 다를 수 있습니다. 터미널·상업시설 인근인지, 주거지 안쪽인지에 따라 상담에서 확인할 항목이 달라집니다.",
       "구의·광장권역은 행정 중심지와 동부 주거지가 함께 묶이는 구조입니다. 구의동은 광진구청과 구의역 기준의 접근성이 중요하고, 광장동은 광나루역과 아차산 방향의 생활권 설명이 더 중요합니다.",
       "이 권역에서는 동서울터미널, 테크노마트, 워커힐, 한강 접근성처럼 서로 다른 기준이 섞입니다. 그래서 권역 페이지는 넓은 비교 정보를 주고 세부 예약 판단은 동 또는 역 페이지로 연결합니다.",
-      "구의동과 광장동을 하나의 문장으로 반복하면 품질이 낮아질 수 있습니다. 본문에서는 중심 업무 생활권과 동부 주거 생활권의 차이를 분명히 나누었습니다."
+      "구의동과 광장동을 같은 기준으로만 설명하면 안내가 부정확해질 수 있습니다. 본문에서는 중심 업무 생활권과 동부 주거 생활권의 차이를 분명히 나누었습니다."
     )
     "jayang-kondae-area" = @(
       "자양·건대권역은 자양동 주거지, 건대입구 상권, 뚝섬유원지역 한강 생활권을 함께 확인하는 사용자가 많습니다. 역세권 메뉴와 지역 메뉴가 서로 보완하도록 구성했습니다.",
-      "자양동은 한강 접근성과 주거 문의가 함께 나타나고, 건대입구 생활권은 상권과 대학가 문의가 섞입니다. 이 차이를 본문에 반영해 단순 지역명 치환 페이지가 되지 않도록 했습니다.",
+      "자양동은 한강 접근성과 주거 문의가 함께 나타나고, 건대입구 생활권은 상권과 대학가 문의가 섞입니다. 이 차이를 본문에 반영해 실제 위치 판단에 도움이 되도록 했습니다.",
       "뚝섬유원지역과 건대입구역은 모두 7호선 흐름에 있지만 예약 준비 기준이 다릅니다. 한강공원 인근인지, 자양동 주거지인지, 건대 상권인지에 따라 상담에서 확인할 위치 정보가 달라집니다.",
       "자양·건대권역은 남부 한강 생활권과 대학가 상권이 만나는 점이 특징입니다. 구의·광장권역처럼 동부 주거 중심으로만 설명하면 실제 사용자가 찾는 정보와 어긋날 수 있습니다.",
       "자양동 문의는 주거지 주소와 한강 접근성을 함께 확인하고, 건대입구 생활권 문의는 상권 혼잡도와 출입 방식 확인이 중요합니다. 두 흐름을 나눠 설명해야 페이지 고유성이 살아납니다.",
-      "이 권역에서는 건대입구역 페이지, 뚝섬유원지역 페이지, 자양동 페이지가 서로 다른 역할을 합니다. 권역 페이지는 세 페이지를 비교하는 허브로 두어 도어웨이 신호를 낮췄습니다."
+      "이 권역에서는 건대입구역 페이지, 뚝섬유원지역 페이지, 자양동 페이지가 서로 다른 역할을 합니다. 권역 페이지는 세 페이지를 비교할 수 있는 안내 화면으로 구성했습니다."
     )
     "junggok-dong" = @(
       "중곡동은 중곡역과 용마산로, 중곡제일시장 생활권을 기준으로 세부 위치를 확인하는 것이 좋습니다. 주거지 안쪽 주소가 많을 수 있어 공동현관과 연락 가능 여부가 중요합니다.",
@@ -459,7 +481,7 @@ function Unique-Notes([string]$Title, [string]$Desc, [string]$Path) {
     "gunja-dong" = @(
       "군자동은 군자역 환승 흐름과 능동로, 세종대학교 생활권이 함께 있는 지역입니다. 환승역 근처인지 대학가 쪽인지에 따라 예약 가능 시간 확인 방식이 달라질 수 있습니다.",
       "군자동 페이지는 중곡동과 달리 군자역 중심의 이동 편의와 상권 접근성을 함께 봅니다. 그래서 권역 페이지보다 역세권 안내와 더 강하게 연결됩니다.",
-      "군자역은 5호선과 7호선에 동시에 보이지만 실제 URL은 하나입니다. 군자동 안내에서도 같은 원칙을 따라 중복 페이지를 만들지 않고 관련 링크로만 연결합니다.",
+      "군자역은 5호선과 7호선에 동시에 보이지만 상세 안내는 하나로 연결됩니다. 군자동 안내에서도 같은 기준을 따라 관련 페이지로만 연결합니다.",
       "군자동 예약 문의에서는 군자역 출구 인근인지, 세종대학교와 가까운 생활권인지, 능동로 안쪽 주소인지가 중요한 구분점입니다. 같은 군자동이라도 방문 동선이 달라질 수 있습니다.",
       "군자동은 중곡동처럼 주거지 중심으로만 설명하기 어렵고, 능동·화양권역과도 생활 흐름이 일부 겹칩니다. 그래서 본문에서는 환승역, 대학가, 주거지라는 세 기준을 함께 다룹니다.",
       "상담 시에는 군자역 기준 도보 거리보다 실제 주소와 건물 출입 조건을 우선 확인합니다. 환승역 주변은 위치 설명이 쉬워 보여도 건물 입구와 이동 동선이 다를 수 있습니다."
@@ -507,10 +529,89 @@ function Unique-Notes([string]$Title, [string]$Desc, [string]$Path) {
   }
   if ($notes.ContainsKey($slug)) { return $notes[$slug] }
   return @(
-    "$Title 페이지는 $Path 경로의 역할을 기준으로 고유 본문을 보강했습니다. 같은 문단을 반복하기보다 이 페이지에서 사용자가 판단해야 하는 기준을 중심으로 설명합니다.",
-    "$Desc 이 설명을 바탕으로 예약 전 확인사항, 이용 기준, 관련 메뉴 이동 경로를 구체화했습니다. 단순 키워드 나열보다 실제 이용 흐름을 이해하는 데 초점을 둡니다.",
-    "작성과 검수 기준은 플러스 마사지 운영팀의 예약 안내 원칙입니다. 최종 가능 여부는 상담 단계에서 확인하며, 페이지 내용은 이용자가 문의 전에 준비할 정보를 알려주는 역할입니다."
+    "$Title 안내는 예약 전에 확인할 내용을 중심으로 정리했습니다. 같은 광진구 안에서도 세부 위치와 시간대에 따라 안내가 달라질 수 있어 상담 전 준비사항을 함께 확인하는 것이 좋습니다.",
+    "$Desc 예약 전에는 정확한 위치, 희망 시간, 이용 인원, 코스 선택 기준을 간단히 정리해 주세요. 이 정보가 있으면 방문 가능 여부를 더 빠르게 안내받을 수 있습니다.",
+    "최종 가능 여부는 상담 단계에서 확인합니다. 페이지 내용은 문의 전에 준비하면 좋은 정보를 알려주는 안내이며, 실제 배정 상황과 방문 조건에 따라 달라질 수 있습니다."
   )
+}
+
+function Customer-Notes([string]$Title, [string]$Desc, [string]$Path) {
+  $category = Get-Category $Path
+  $plainTitle = ($Title -replace '\s*\|.*$', '')
+  switch ($category) {
+    'station' {
+      return @(
+        "역 인근 예약은 출구명보다 실제 주소가 더 중요합니다. 같은 역세권이라도 대로변, 주거지, 오피스텔, 숙박시설 위치에 따라 안내 시간이 달라질 수 있습니다.",
+        "상담할 때는 가까운 역, 상세 주소, 희망 시간, 출입 방법을 함께 알려주세요. 위치 확인이 빠를수록 방문 가능 여부를 더 정확하게 안내할 수 있습니다.",
+        "환승역 주변은 유동 인구가 많아 시간대별 이동 상황이 달라질 수 있습니다. 저녁 시간대와 주말에는 여유 있게 문의하는 것을 권장합니다.",
+        "관련 정보는 지하철역별 안내, 지역별 안내, 코스안내, 이용 전 확인사항에서 이어서 확인할 수 있습니다."
+      )
+    }
+    'dong' {
+      return @(
+        "동 단위 안내는 실제 주소를 기준으로 예약 전 준비사항을 확인하는 페이지입니다. 같은 동 안에서도 주거지 안쪽인지, 역과 가까운지, 상권 주변인지에 따라 안내가 달라질 수 있습니다.",
+        "예약 전에는 상세 주소, 공동현관 출입 방법, 주차 가능 여부, 연락 가능한 번호를 준비해 주세요. 현장 안내가 짧아지고 예약 확인이 더 수월해집니다.",
+        "방문 환경이 조용히 확보되는지도 중요합니다. 관리 전후로 충분한 휴식이 가능한지, 안내받은 시간에 연락이 가능한지 함께 확인해 주세요.",
+        "가까운 권역과 역세권 페이지를 함께 보면 자신의 위치에 맞는 안내를 더 쉽게 찾을 수 있습니다."
+      )
+    }
+    'area' {
+      return @(
+        "권역 안내는 여러 동을 한 번에 비교해 볼 수 있도록 만든 페이지입니다. 먼저 권역을 확인한 뒤 세부 동이나 가까운 역세권 안내로 이동하면 더 정확한 정보를 볼 수 있습니다.",
+        "방문 가능 여부는 권역명만으로 확정되지 않습니다. 상세 주소, 예약 시간, 이동 상황, 코스와 인원에 따라 달라질 수 있어 상담 단계에서 다시 확인합니다.",
+        "권역 페이지에서는 큰 생활권의 특징을 보고, 동 페이지에서는 실제 주소 기준 준비사항을 확인하는 흐름이 좋습니다.",
+        "예약이 처음이라면 출장 가능 지역, 지하철역 인근 안내, 예약 가능 시간, 이용 전 확인사항을 순서대로 확인해 주세요."
+      )
+    }
+    'course' {
+      return @(
+        "코스 선택은 현재 컨디션과 이용 목적에 맞춰 결정하는 것이 좋습니다. 피로감, 선호 압, 이용 시간, 동반 인원, 방문 장소의 환경을 상담 시 함께 알려주세요.",
+        "처음 이용하는 경우에는 무리한 선택보다 기본적인 관리 목적을 먼저 정리하는 편이 좋습니다. 세부 시간과 가격은 상담 과정에서 다시 확인합니다.",
+        "커플·가족 또는 단체 이용은 인원과 공간 조건을 함께 확인해야 합니다. 일정이 정해져 있다면 가능한 빨리 문의하는 것이 좋습니다.",
+        "코스안내, 가격 안내, 예약안내를 함께 보면 선택 기준을 더 쉽게 정리할 수 있습니다."
+      )
+    }
+    'reservation' {
+      return @(
+        "예약은 지역과 희망 시간 확인, 코스와 인원 선택, 방문 가능 여부 안내, 예약 확정 순서로 진행됩니다.",
+        "상담 전에는 정확한 주소와 연락 가능한 번호를 준비해 주세요. 출입 방법이나 주차 가능 여부도 함께 알려주면 안내가 더 정확해집니다.",
+        "당일 예약은 가능할 수 있지만 시간대와 배정 상황에 따라 달라집니다. 저녁 시간대와 주말은 사전 예약을 권장합니다.",
+        "예약 후 변경이 필요하면 가능한 빨리 연락해 주세요. 배정 상황에 따라 조정 가능 여부가 달라질 수 있습니다."
+      )
+    }
+    'guide' {
+      return @(
+        "이용가이드는 처음 이용하는 분이 방문 전 준비사항과 안전 기준을 확인하는 공간입니다. 주소, 출입 방법, 관리받을 공간을 미리 정리해 주세요.",
+        "위생과 안전 기준은 예약 전 반드시 확인하는 것이 좋습니다. 건전한 이용 범위를 벗어난 요청은 제공하지 않습니다.",
+        "관리 후에는 물을 충분히 마시고 무리한 활동을 피하는 것이 좋습니다. 개인 컨디션에 따라 휴식 시간이 필요할 수 있습니다.",
+        "금지행위 안내, 위생 및 안전 기준, 예약 전 체크리스트를 함께 확인하면 이용 과정의 오해를 줄일 수 있습니다."
+      )
+    }
+    'reviews' {
+      return @(
+        "후기는 실제 이용 경험이 있을 때만 사용하는 것이 좋습니다. 지역명만 바꾼 반복 문장은 신뢰를 떨어뜨릴 수 있어 사용하지 않습니다.",
+        "후기를 볼 때는 이용 지역, 예약 시간대, 선택한 코스, 준비 과정이 자신과 비슷한지 함께 확인해 주세요.",
+        "개인의 컨디션과 선호도에 따라 만족 포인트가 달라질 수 있습니다. 후기는 참고용이며 최종 선택은 상담을 통해 확인하는 것이 좋습니다.",
+        "지역별 후기와 역세권 후기는 서로 다른 기준으로 정리해 두면 자신의 상황과 가까운 사례를 찾기 쉽습니다."
+      )
+    }
+    'customer' {
+      return @(
+        "고객센터 페이지는 문의 전후로 필요한 정보를 확인하는 공간입니다. 예약 문의, 자주 묻는 질문, 제휴 문의, 정책 문서를 나누어 안내합니다.",
+        "문의 전에는 지역, 희망 시간, 이용 목적을 간단히 정리해 주세요. 같은 질문도 위치와 시간대에 따라 답이 달라질 수 있습니다.",
+        "개인정보처리방침과 이용약관은 예약 상담에 필요한 정보의 범위와 이용 기준을 확인하기 위한 문서입니다.",
+        "공지사항과 FAQ는 운영 중 자주 묻는 내용을 기준으로 보완하는 것이 좋습니다. 궁금한 점이 남으면 1:1 문의를 이용해 주세요."
+      )
+    }
+    default {
+      return @(
+        "$plainTitle 페이지는 예약 전 확인할 내용을 한눈에 볼 수 있도록 구성했습니다. 필요한 정보가 많다면 관련 안내 페이지를 함께 확인해 주세요.",
+        "정확한 위치, 희망 시간, 코스, 인원, 출입 방법은 상담에서 가장 먼저 확인하는 항목입니다.",
+        "방문 가능 여부는 상담 단계에서 최종 확인합니다. 시간대와 배정 상황에 따라 안내가 달라질 수 있습니다.",
+        "이용 전 확인사항과 위생 및 안전 기준을 함께 읽으면 예약 과정의 오해를 줄일 수 있습니다."
+      )
+    }
+  }
 }
 
 function Add-DetailContent {
@@ -519,36 +620,55 @@ function Add-DetailContent {
     $html = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8
     $path = $file.FullName.Substring($Root.Length).Replace('\','/')
     if ($path -eq '/index.html') { $urlPath = '/' } else { $urlPath = $path.Replace('/index.html','/') }
-    $title = [regex]::Match($html, '<title>(.*?)</title>').Groups[1].Value
+    $title = [System.Net.WebUtility]::HtmlDecode([regex]::Match($html, '<title>(.*?)</title>').Groups[1].Value)
     $plainTitle = ($title -replace '\s*\|.*$', '')
-    $desc = [regex]::Match($html, '<meta name="description" content="(.*?)"').Groups[1].Value
+    $desc = [System.Net.WebUtility]::HtmlDecode([regex]::Match($html, '<meta name="description" content="(.*?)"').Groups[1].Value)
     $length = (Strip-HtmlText $html).Length
     if ($length -ge 2050) { continue }
-    $paras = (Unique-Notes $title $desc $urlPath) + (Detail-Paragraphs $title $desc $urlPath)
-    $section = '<section class="block detail-copy"><div class="wrap content"><span class="eyebrow">DETAIL GUIDE</span><h2 class="sec">상세 안내</h2>'
+    $paras = (Unique-Notes $title $desc $urlPath) + (Customer-Notes $title $desc $urlPath)
+    $section = '<section class="block detail-copy"><div class="wrap content"><span class="eyebrow">이용 안내</span><h2 class="sec">상세 안내</h2>'
+    $heads = @("예약 전 확인", "방문 가능 여부", "이용 기준", "함께 보면 좋은 안내", "준비사항", "상담 안내", "안전 안내", "관련 정보")
     $i = 0
     while ($length -lt 2120 -and $i -lt $paras.Count) {
       $p = $paras[$i]
-      $section += "<p>$(E $p)</p>"
+      $h = $heads[$i % $heads.Count]
+      $section += "<section class=""lux""><h2>$(E $h)</h2><p>$(E $p)</p></section>"
       $length += $p.Length
       $i++
     }
     $supplement = @(
-      "$title 보충 안내는 $urlPath 경로의 역할을 기준으로 작성했습니다. 사용자가 이 주소에 들어왔을 때 확인해야 할 내용은 페이지 제목, 본문 소제목, 연결 메뉴가 서로 같은 방향을 가리키는지입니다.",
-      "$plainTitle 문서에서는 검색어를 억지로 반복하지 않고, 해당 메뉴가 담당하는 판단 기준을 설명합니다. 부족한 정보는 관련 페이지로 넘기고, 이 페이지 안에서는 핵심 목적만 분명히 유지합니다.",
-      "운영팀 검수 기준은 간단합니다. 이 페이지가 실제 예약자에게 필요한 준비사항을 주는지, 다른 페이지와 같은 문장을 반복하지 않는지, 최종 확인이 필요한 부분을 확정처럼 쓰지 않았는지 확인합니다.",
-      "$urlPath 페이지는 배포 후에도 문의 내용이 쌓이면 보완해야 합니다. 실제 사용자가 헷갈리는 지점이 확인되면 문단을 추가하고, 필요 없는 반복 문장은 줄이는 방식으로 품질을 관리합니다."
+      "$plainTitle 안내를 확인한 뒤에도 궁금한 점이 남으면 예약 문의에서 위치와 희망 시간을 함께 알려주세요. 상담 시 가능한 범위 안에서 방문 여부와 준비사항을 안내합니다.",
+      "방문 전에는 조용한 공간, 연락 가능한 상태, 정확한 주소를 한 번 더 확인해 주세요. 작은 정보 차이로도 안내 시간이 달라질 수 있습니다.",
+      "예약 내용은 상황에 따라 조정이 필요할 수 있습니다. 변경이나 취소가 필요하면 가능한 빨리 연락하는 것이 좋습니다.",
+      "관련 메뉴를 함께 확인하면 지역, 역세권, 코스, 이용 기준을 순서대로 정리할 수 있습니다."
     )
     $j = 0
-    while ($length -lt 2200 -and $j -lt $supplement.Count) {
+    while ($length -lt 2180 -and $j -lt $supplement.Count) {
       $p = $supplement[$j]
-      $section += "<p>$(E $p)</p>"
+      $h = $heads[($i + $j) % $heads.Count]
+      $section += "<section class=""lux""><h2>$(E $h)</h2><p>$(E $p)</p></section>"
       $length += $p.Length
       $j++
     }
-    if ($length -lt 2000) {
-      $extra = "이 페이지는 약 2,000자 이상의 본문 분량을 기준으로 작성되어, 메뉴 구조뿐 아니라 실제 이용자가 읽을 수 있는 안내 콘텐츠까지 함께 제공하도록 보강했습니다. 짧게 끝내지 않고 페이지 목적, 확인 기준, 신뢰 신호를 함께 남겨 검색용 얇은 문서처럼 보이지 않게 관리합니다."
-      $section += "<p>$(E $extra)</p>"
+    $extras = @(
+      "처음 문의하는 경우에는 현재 위치와 희망 시간을 먼저 정리해 주세요. 이후 코스, 인원, 방문 환경을 차례대로 확인하면 상담 과정이 훨씬 간단해집니다.",
+      "건물 출입 방법이나 주차 조건처럼 현장에서 필요한 정보는 예약 전에 알려주는 것이 좋습니다. 작은 정보라도 미리 확인되면 방문 준비가 더 안정적으로 진행됩니다.",
+      "이 안내는 확정된 방문 시간을 약속하는 문서가 아니라 문의 전에 확인할 기준을 정리한 내용입니다. 실제 가능 여부는 상담 시점의 배정 상황을 기준으로 다시 안내합니다.",
+      "관련 페이지를 함께 보면 지역, 역세권, 코스, 예약 절차를 한 흐름으로 이해할 수 있습니다. 필요한 항목을 확인한 뒤 예약 문의로 이동하면 됩니다.",
+      "방문 장소가 아파트, 오피스텔, 숙박시설, 사무실 중 어디인지에 따라 준비해야 할 정보가 달라질 수 있습니다. 예약 전에는 건물명과 출입 기준을 함께 확인해 주세요.",
+      "상담 중 안내받은 내용은 예약 시점의 상황을 기준으로 합니다. 시간이 지나면 배정 상태와 이동 상황이 달라질 수 있으므로 확정 전에는 한 번 더 확인하는 것이 좋습니다.",
+      "편안한 이용을 위해 관리받을 공간은 미리 정돈해 두는 것이 좋습니다. 주변 소음, 조명, 환기, 연락 가능 상태처럼 기본 환경을 확인하면 이용 과정이 더 안정적입니다.",
+      "궁금한 점이 여러 개라면 지역, 시간, 코스, 결제, 변경 가능 여부 순서로 질문을 정리해 주세요. 상담 흐름이 명확해지고 필요한 안내를 빠뜨릴 가능성이 줄어듭니다.",
+      "특별히 조심해야 할 컨디션이나 불편한 부위가 있다면 예약 전에 알려주세요. 방문 관리는 의료 행위가 아니므로 치료 효과를 전제로 안내하지 않으며, 필요한 경우 전문 상담을 우선해야 합니다.",
+      "같은 광진구 안에서도 주거지, 상권, 역세권, 한강 주변 생활권은 방문 준비 기준이 다릅니다. 이 페이지의 안내를 먼저 확인한 뒤 가까운 세부 페이지로 이동하면 판단이 쉽습니다."
+    )
+    $k = 0
+    while ($length -lt 2070 -and $k -lt $extras.Count) {
+      $p = $extras[$k]
+      $h = $heads[($i + $j + $k) % $heads.Count]
+      $section += "<section class=""lux""><h2>$(E $h)</h2><p>$(E $p)</p></section>"
+      $length += $p.Length
+      $k++
     }
     $section += '</div></section>'
     $html = $html.Replace('<footer class="footer">', "$section<footer class=""footer"">")
@@ -591,10 +711,10 @@ $courseCardsHome = Cards @(
   @{ Href="/course/price/"; Kicker="PRICE"; Title="가격 안내"; Text="시간과 코스 기준은 상담 전 안내 페이지에서 확인합니다." }
 )
 $homeBody = @"
-<section class="hero"><div class="wrap hero-inner"><div><span class="eyebrow">PLUS MASSAGE</span><h1><span class="grad">광진 출장마사지</span> 예약 안내</h1><p class="lead">광진 출장마사지를 찾는 분들을 위해 광진구 중곡동, 구의동, 자양동, 화양동, 군자동 일대 방문 가능 지역, 코스 선택 기준, 예약 전 확인사항을 안내합니다.</p><div class="actions"><a class="btn primary" href="tel:$PhoneTel">예약문의</a><a class="btn" href="/course/">코스 확인하기</a><a class="btn" href="/gwangjin-gu/area/">출장 가능 지역 보기</a></div></div><div class="panel"><div class="k">RESERVATION CHECK</div><h3>예약 전 핵심 확인</h3><div class="row"><span>지역</span><b>광진구 생활권</b></div><div class="row"><span>상담</span><b>$Hours</b></div><div class="row"><span>기준</span><b>위치·시간·코스 확인</b></div></div></div></section>
+<section class="hero"><div class="wrap hero-inner"><div><span class="eyebrow">PLUS MASSAGE</span><h1><span class="grad">광진 출장마사지</span> 예약 안내</h1><p class="lead">광진 출장마사지를 찾는 분들을 위해 광진구 중곡동, 구의동, 자양동, 화양동, 군자동 일대 방문 가능 지역, 코스 선택 기준, 예약 전 확인사항을 안내합니다.</p><div class="actions"><a class="btn primary" href="tel:$PhoneTel">예약문의</a><a class="btn" href="/course/">코스 확인하기</a><a class="btn" href="/gwangjin-gu/area/">출장 가능 지역 보기</a></div></div><div class="panel"><div class="k">RESERVATION CHECK</div><h3>예약 확인</h3><div class="row"><span>지역</span><b>광진구 생활권</b></div><div class="row"><span>상담</span><b>$Hours</b></div><div class="row"><span>기준</span><b>위치·시간·코스 확인</b></div></div></div></section>
 <section class="block"><div class="wrap"><span class="eyebrow">TRUST</span><h2 class="sec">편안하고 안전한 방문 관리 안내</h2><p class="sec-lead">예약 정보, 위생 기준, 방문 전 준비, 금지행위, 개인정보 보호를 메인 상단에서 먼저 확인할 수 있게 구성했습니다.</p>$trustCards</div></section>
-<section class="block"><div class="wrap"><span class="eyebrow">AREA</span><h2 class="sec">광진구 출장 가능 지역</h2><p class="sec-lead">메인은 권역명만 짧게 쓰고, 세부 페이지에서 H1과 SEO Title을 사용합니다.</p>$areaCards</div></section>
-<section class="block"><div class="wrap"><span class="eyebrow">STATION</span><h2 class="sec">광진구 지하철역 인근 방문 안내</h2><p class="sec-lead">역세권 카드에는 역명만 표기합니다. 건대입구역과 군자역처럼 환승역은 여러 메뉴에 보일 수 있어도 실제 URL은 하나만 사용합니다.</p>$stationCards</div></section>
+<section class="block"><div class="wrap"><span class="eyebrow">AREA</span><h2 class="sec">광진구 출장 가능 지역</h2><p class="sec-lead">광진구 생활권을 권역별로 나누어 가까운 동과 역세권 안내를 쉽게 찾을 수 있게 정리했습니다.</p>$areaCards</div></section>
+<section class="block"><div class="wrap"><span class="eyebrow">STATION</span><h2 class="sec">광진구 지하철역 인근 방문 안내</h2><p class="sec-lead">역세권 카드에는 역명만 표기합니다. 건대입구역과 군자역처럼 환승역은 여러 메뉴에 보일 수 있어도 상세 안내는 하나로 연결됩니다.</p>$stationCards</div></section>
 <section class="block"><div class="wrap"><span class="eyebrow">COURSE</span><h2 class="sec">관리 코스 안내</h2><p class="sec-lead">컨디션과 이용 목적에 따라 피로 회복 관리, 아로마 관리, 스포츠 관리 등 다양한 코스를 선택할 수 있습니다. 자세한 시간과 가격은 코스 안내 페이지에서 확인해보세요.</p>$courseCardsHome</div></section>
 <section class="block"><div class="wrap content"><span class="eyebrow">PROCESS</span><h2 class="sec">예약은 이렇게 진행됩니다</h2><section class="lux"><ol><li>지역과 희망 시간 확인</li><li>코스와 인원 선택</li><li>방문 가능 여부 안내</li><li>예약 확정</li><li>방문 관리 진행</li></ol></section></div></section>
 <section class="block"><div class="wrap content"><span class="eyebrow">CHECKLIST</span><h2 class="sec">이용 전 확인사항</h2><section class="lux"><ul><li>정확한 주소</li><li>공동현관 출입 방법</li><li>주차 가능 여부</li><li>조용한 공간 확보</li><li>예약자 연락 가능 여부</li><li><a href="/guide/notice/">금지행위 확인</a></li></ul><p><a href="/guide/">이용가이드</a>, <a href="/guide/safety/">위생 및 안전 기준</a>, <a href="/guide/notice/">금지행위 안내</a>를 함께 확인하세요.</p></section></div></section>
@@ -607,16 +727,16 @@ $homeBody = @"
 Write-Page "/" "$PrimaryKeyword | 광진구 방문 마사지 예약 안내" "광진 출장마사지 안내 페이지입니다. 중곡동, 구의동, 자양동, 화양동, 건대입구역, 군자역 인근 방문 가능 지역과 예약 전 확인사항을 확인해보세요." "home" $homeBody
 
 $sections = @(
-  @{ Title="서비스 안내"; Texts=@("광진구 전역을 대상으로 방문 마사지 예약 안내를 제공합니다. 상단 메뉴에서는 핵심 키워드 광진 출장마사지를 한 번만 사용하고, 하위 메뉴는 서비스 안내·출장 가능 지역처럼 자연스러운 이름으로 정리했습니다.") },
+  @{ Title="서비스 안내"; Texts=@("광진구 전역을 대상으로 방문 마사지 예약 안내를 제공합니다. 서비스 범위, 상담 기준, 위생과 안전, 예약 전 확인사항을 순서대로 확인할 수 있습니다.") },
   @{ Title="출장 가능 지역"; Texts=@("중곡동, 군자동, 능동, 화양동, 구의동, 광장동, 자양동과 건대입구 생활권을 중심으로 권역별 안내를 제공합니다.") },
-  @{ Title="지하철역 인근 안내"; Texts=@("건대입구역과 군자역처럼 환승 노선이 있는 역도 실제 상세 페이지 URL은 하나만 사용합니다. 같은 역 메뉴가 여러 노선 아래 보이더라도 모두 같은 주소로 연결됩니다.") },
+  @{ Title="지하철역 인근 안내"; Texts=@("건대입구역과 군자역처럼 환승 노선이 있는 역도 상세 안내는 하나로 연결합니다. 같은 역 메뉴가 여러 노선 아래 보이더라도 모두 같은 안내로 이동합니다.") },
   @{ Title="예약 가능 시간"; Texts=@("상담은 연중무휴 24시간 기준으로 안내하며 실제 방문 가능 시간은 위치, 코스, 예약 상황에 따라 확인합니다.") },
   @{ Title="이용 전 확인사항"; Texts=@("정확한 주소, 연락 가능한 번호, 방문 환경, 희망 코스를 미리 확인하면 상담과 배정이 더 빠르게 진행됩니다.") }
 )
 $faqs = @(
   @("광진구 전체 예약이 가능한가요?", "중곡동, 군자동, 능동, 화양동, 구의동, 광장동, 자양동 등 광진구 주요 생활권을 기준으로 안내합니다."),
   @("건대입구역은 2호선과 7호선 페이지가 따로 있나요?", "아니요. 메뉴에는 노선별로 보일 수 있지만 실제 페이지는 /gwangjin-gu/stations/kondae-station/ 하나만 사용합니다."),
-  @("군자역도 URL이 하나인가요?", "네. 5호선과 7호선 메뉴 모두 /gwangjin-gu/stations/gunja-station/ 으로 연결됩니다.")
+  @("군자역도 안내가 하나로 연결되나요?", "네. 5호선과 7호선 메뉴 모두 같은 군자역 안내 페이지로 이동합니다.")
 )
 Write-Page "/gwangjin-gu/" "광진구 방문 마사지 지역·역 안내 | 플러스 마사지" "광진구 방문 마사지 대표 안내. 가능 지역, 지하철역 인근, 코스 선택, 예약 전 확인사항을 제공합니다." "gwangjin" (StandardContent "GWANGJIN" "<span class=""grad"">$PrimaryKeyword</span><br>예약 안내" "광진구 방문 마사지 예약을 처음 확인하는 분을 위한 대표 안내 페이지입니다." $sections $faqs)
 
@@ -654,7 +774,7 @@ GwangjinSubPage "/gwangjin-gu/faq/" "자주 묻는 질문 | 광진구 방문 마
 
 $areaItems = @(@{Href="/gwangjin-gu/area/";Kicker="ALL";Title="광진구 전체";Text="광진구 가능 지역 전체 보기"})
 foreach ($r in $Regions) { $areaItems += @{Href="/gwangjin-gu/$($r.Slug)/";Kicker="AREA";Title=$r.Name;Text=$r.Summary} }
-Write-Page "/gwangjin-gu/area/" "광진구 출장마사지 가능 지역 | 중곡동·구의동·자양동 안내" "광진구 출장마사지 가능 지역 안내. 중곡동, 군자동, 능동, 화양동, 구의동, 광장동, 자양동 권역 정보를 제공합니다." "area" "$(Hero 'AREA GUIDE' '<span class=""grad"">지역별 안내</span>' '메뉴명에서는 출장마사지 반복을 줄이고, 상세 페이지 제목에서 지역 키워드를 정확히 사용합니다.' '/gwangjin-gu/area/' '지역 전체 보기')<section class=""block""><div class=""wrap"">$(Cards $areaItems)</div></section>"
+Write-Page "/gwangjin-gu/area/" "광진구 출장마사지 가능 지역 | 중곡동·구의동·자양동 안내" "광진구 출장마사지 가능 지역 안내. 중곡동, 군자동, 능동, 화양동, 구의동, 광장동, 자양동 권역 정보를 제공합니다." "area" "$(Hero '지역 안내' '<span class=""grad"">지역별 안내</span>' '광진구 생활권을 권역별로 확인한 뒤 가까운 동과 역세권 안내로 이동할 수 있습니다.' '/gwangjin-gu/area/' '지역 전체 보기')<section class=""block""><div class=""wrap"">$(Cards $areaItems)</div></section>"
 
 foreach ($r in $Regions) {
   $dongList = @()
@@ -662,7 +782,7 @@ foreach ($r in $Regions) {
   $sections = @(
     @{ Title="권역 안내"; Texts=@($r.Summary, @($dongList)) },
     @{ Title="방문 가능 생활권"; Texts=@("이 권역은 주요 도로와 지하철 생활권을 함께 고려해 방문 가능 여부를 안내합니다.") },
-    @{ Title="코스 선택 안내"; Texts=@("권역 페이지에서는 과도한 키워드 반복을 피하고 코스 선택은 코스안내 페이지로 연결합니다.") }
+    @{ Title="코스 선택 안내"; Texts=@("권역별 방문 가능 여부를 확인한 뒤 이용 목적과 컨디션에 맞는 코스는 코스안내 페이지에서 자세히 확인할 수 있습니다.") }
   )
   Write-Page "/gwangjin-gu/$($r.Slug)/" "$($r.H1) | 플러스 마사지" "$($r.Name) 방문 마사지 안내. $($r.Summary)" "area" (StandardContent "AREA" "<span class=""grad"">$($r.H1)</span>" $r.Summary $sections @(@("$($r.Name) 예약은 어떻게 하나요?", "전화 상담 시 위치와 희망 시간을 알려주시면 가능 여부를 안내합니다.")))
   foreach ($d in $r.Dongs) {
@@ -673,22 +793,22 @@ foreach ($r in $Regions) {
       @{ Title="예약·준비사항 안내"; Texts=@("방문 전 주소, 연락처, 희망 코스, 주차 또는 출입 방법을 미리 확인해 주세요.") }
     )
     $title = "$($d.Title) | 광진구 $($d.Name) 방문 마사지"
-    Write-Page "/gwangjin-gu/$($d.Slug)/" $title "$($d.Title) 안내. $($d.Landmarks) 인근 방문 마사지 예약 가능 지역과 이용 전 확인사항을 안내합니다." "area" (StandardContent "DONG GUIDE" "<span class=""grad"">$($d.Title)</span><br>예약 안내" "$($d.Name) 방문 마사지 예약을 찾는 분을 위한 지역별 안내입니다." $sections @(@("$($d.Name) 방문 예약이 가능한가요?", "위치와 시간대 확인 후 가능 여부를 안내합니다."), @("페이지 제목에는 왜 출장마사지가 들어가나요?", "메뉴는 짧게 유지하고 상세 페이지 H1과 SEO Title에서 정확한 검색 의도를 반영하기 위해서입니다.")))
+    Write-Page "/gwangjin-gu/$($d.Slug)/" $title "$($d.Title) 안내. $($d.Landmarks) 인근 방문 마사지 예약 가능 지역과 이용 전 확인사항을 안내합니다." "area" (StandardContent "동별 안내" "<span class=""grad"">$($d.Title)</span><br>예약 안내" "$($d.Name) 방문 마사지 예약을 찾는 분을 위한 지역별 안내입니다." $sections @(@("$($d.Name) 방문 예약이 가능한가요?", "위치와 시간대 확인 후 가능 여부를 안내합니다."), @("예약 전 무엇을 준비하면 좋나요?", "상세 주소, 출입 방법, 희망 시간, 코스와 인원을 미리 정리해 주세요.")))
   }
 }
 
 $stationItems = @(@{Href="/gwangjin-gu/stations/";Kicker="ALL";Title="광진구 지하철역 전체";Text="역세권 안내 전체 보기"})
 foreach ($s in $Stations) { $stationItems += @{Href="/gwangjin-gu/stations/$($s.Slug)/";Kicker=($s.Lines -join " · ");Title=$s.Name;Text=$s.Nearby} }
-Write-Page "/gwangjin-gu/stations/" "광진구 지하철역 출장마사지 | 건대입구역·군자역·구의역 안내" "광진구 지하철역 출장마사지 안내. 건대입구역, 군자역, 구의역, 강변역 등 역세권 방문 마사지 정보를 제공합니다." "stations" "$(Hero 'STATION GUIDE' '<span class=""grad"">지하철역별 안내</span>' '역 메뉴명은 건대입구역, 군자역처럼 짧게 유지하고 상세 페이지에서만 정확한 키워드를 사용합니다.' '/gwangjin-gu/stations/' '역 전체 보기')<section class=""block""><div class=""wrap"">$(Cards $stationItems)</div></section>"
+Write-Page "/gwangjin-gu/stations/" "광진구 지하철역 출장마사지 | 건대입구역·군자역·구의역 안내" "광진구 지하철역 출장마사지 안내. 건대입구역, 군자역, 구의역, 강변역 등 역세권 방문 마사지 정보를 제공합니다." "stations" "$(Hero '역세권 안내' '<span class=""grad"">지하철역별 안내</span>' '건대입구역, 군자역, 구의역, 강변역 등 가까운 역을 기준으로 방문 가능 생활권을 확인할 수 있습니다.' '/gwangjin-gu/stations/' '역 전체 보기')<section class=""block""><div class=""wrap"">$(Cards $stationItems)</div></section>"
 
 foreach ($s in $Stations) {
   $sections = @(
     @{ Title="$($s.Name) 이용 안내"; Texts=@("$($s.Name) 인근은 $($s.Nearby)을 기준으로 방문 가능 여부를 안내합니다.") },
-    @{ Title="환승역 URL 기준"; Texts=@("건대입구역과 군자역처럼 여러 노선에 걸친 역도 실제 상세 URL은 하나만 사용합니다. 이 페이지가 $($s.Name) 안내의 표준 주소입니다.") },
+      @{ Title="환승역 안내 기준"; Texts=@("건대입구역과 군자역처럼 여러 노선에 걸친 역도 실제 상세 안내는 하나로 연결합니다. 이 페이지가 $($s.Name) 안내의 기준 페이지입니다.") },
     @{ Title="방문 가능 생활권"; Texts=@("평균 안내 시간은 약 $($s.Arrival)분 내외이며 예약 시간대, 위치, 교통 상황에 따라 달라질 수 있습니다.") },
     @{ Title="예약 전 체크사항"; Texts=@("출구 번호, 상세 주소, 연락 가능한 번호, 방문 환경을 상담 시 함께 알려주시면 안내가 정확해집니다.") }
   )
-  Write-Page "/gwangjin-gu/stations/$($s.Slug)/" $s.Seo "$($s.Title) 안내. $($s.Nearby) 인근 방문 마사지 예약 정보를 제공합니다." "stations" (StandardContent "STATION" "<span class=""grad"">$($s.Title)</span><br>예약 안내" "$($s.Name) 인근 방문 마사지 예약을 확인하는 분을 위한 역세권 안내입니다." $sections @(@("$($s.Name) 근처 예약이 가능한가요?", "상세 위치와 시간대를 확인한 뒤 방문 가능 여부를 안내합니다."), @("노선별로 페이지가 중복되나요?", "아니요. 메뉴 노출은 여러 곳에 가능하지만 실제 URL은 하나만 사용합니다.")))
+  Write-Page "/gwangjin-gu/stations/$($s.Slug)/" $s.Seo "$($s.Title) 안내. $($s.Nearby) 인근 방문 마사지 예약 정보를 제공합니다." "stations" (StandardContent "STATION" "<span class=""grad"">$($s.Title)</span><br>예약 안내" "$($s.Name) 인근 방문 마사지 예약을 확인하는 분을 위한 역세권 안내입니다." $sections @(@("$($s.Name) 근처 예약이 가능한가요?", "상세 위치와 시간대를 확인한 뒤 방문 가능 여부를 안내합니다."), @("노선별로 안내가 나뉘나요?", "아니요. 메뉴 노출은 여러 곳에 가능하지만 상세 안내는 하나로 연결됩니다.")))
 }
 
 $courseCards = @()
