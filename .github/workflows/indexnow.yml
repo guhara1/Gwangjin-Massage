@@ -1,0 +1,28 @@
+name: Submit IndexNow URLs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.html"
+      - "sitemap.xml"
+      - "8b6f9d2a4f6a4a9ca710d98f5e21c7be.txt"
+      - "tools/indexnow-submit.ps1"
+      - ".github/workflows/indexnow.yml"
+  workflow_dispatch:
+
+jobs:
+  submit-indexnow:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Wait for Pages deployment
+        shell: pwsh
+        run: Start-Sleep -Seconds 60
+
+      - name: Submit sitemap URLs to IndexNow
+        shell: pwsh
+        run: ./tools/indexnow-submit.ps1
