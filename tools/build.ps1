@@ -88,13 +88,13 @@ function NestedItem([string]$Href, [string]$Label, [array]$Children) {
 
 function HeaderHtml([string]$Active) {
   $gwangjinSub = @(
-    (MenuItem "/gwangjin-gu/" "서비스 안내"),
+    (MenuItem "/gwangjin-gu/service/" "서비스 안내"),
     (MenuItem "/gwangjin-gu/area/" "출장 가능 지역"),
     (MenuItem "/gwangjin-gu/stations/" "지하철역 인근 안내"),
     (MenuItem "/gwangjin-gu/hours/" "예약 가능 시간"),
-    (MenuItem "/course/guide/" "코스 선택 안내"),
-    (MenuItem "/guide/checklist/" "이용 전 확인사항"),
-    (MenuItem "/customer/faq/" "자주 묻는 질문")
+    (MenuItem "/gwangjin-gu/course-guide/" "코스 선택 안내"),
+    (MenuItem "/gwangjin-gu/checklist/" "이용 전 확인사항"),
+    (MenuItem "/gwangjin-gu/faq/" "자주 묻는 질문")
   )
   $areaSub = @((MenuItem "/gwangjin-gu/area/" "광진구 전체"))
   foreach ($r in $Regions) {
@@ -619,6 +619,38 @@ $faqs = @(
   @("군자역도 URL이 하나인가요?", "네. 5호선과 7호선 메뉴 모두 /gwangjin-gu/stations/gunja-station/ 으로 연결됩니다.")
 )
 Write-Page "/gwangjin-gu/" "광진구 방문 마사지 지역·역 안내 | 플러스 마사지" "광진구 방문 마사지 대표 안내. 가능 지역, 지하철역 인근, 코스 선택, 예약 전 확인사항을 제공합니다." "gwangjin" (StandardContent "GWANGJIN" "<span class=""grad"">$PrimaryKeyword</span><br>예약 안내" "광진구 방문 마사지 예약을 처음 확인하는 분을 위한 대표 안내 페이지입니다." $sections $faqs)
+
+function GwangjinSubPage([string]$Path, [string]$Title, [string]$Desc, [string]$H1, [string]$Lead, [array]$Sections, [array]$Faqs) {
+  Write-Page $Path $Title $Desc "gwangjin" (StandardContent "GWANGJIN GUIDE" "<span class=""grad"">$H1</span>" $Lead $Sections $Faqs)
+}
+
+GwangjinSubPage "/gwangjin-gu/service/" "서비스 안내 | 광진구 방문 마사지 이용 기준" "광진구 방문 마사지 서비스 안내 페이지입니다. 예약 범위, 상담 기준, 위생과 안전, 금지행위, 개인정보 보호 원칙을 확인하세요." "서비스 안내" "광진구에서 방문 마사지 예약을 알아볼 때 먼저 확인해야 할 서비스 범위와 이용 기준을 정리했습니다." @(
+  @{ Title="서비스 범위"; Texts=@("플러스 마사지는 광진구 생활권을 기준으로 방문 마사지 예약 정보를 안내합니다. 서비스 안내 페이지는 특정 동이나 역을 반복하는 곳이 아니라, 이용자가 예약 전 전체 기준을 이해하는 출발점입니다.") },
+  @{ Title="상담 기준"; Texts=@("상담 시에는 지역, 희망 시간, 코스, 이용 인원, 방문 환경을 확인합니다. 정확한 주소와 출입 방식이 있어야 실제 가능 여부를 안내할 수 있습니다.") },
+  @{ Title="안전한 이용 원칙"; Texts=@("건전한 방문 관리 기준을 벗어난 요청은 제공하지 않습니다. 위생 기준, 금지행위, 개인정보 보호 문서를 함께 확인하면 오해를 줄일 수 있습니다.") },
+  @{ Title="관련 안내"; Texts=@(@('<a href="/gwangjin-gu/area/">출장 가능 지역</a>', '<a href="/gwangjin-gu/hours/">예약 가능 시간</a>', '<a href="/gwangjin-gu/checklist/">이용 전 확인사항</a>')) }
+) @(@("서비스 안내와 지역 페이지는 어떻게 다른가요?", "서비스 안내는 이용 기준을 설명하고, 지역 페이지는 실제 방문 가능 생활권을 안내합니다."), @("방문 가능 여부는 바로 확정되나요?", "정확한 위치와 예약 시간, 배정 상황을 확인한 뒤 안내합니다."))
+
+GwangjinSubPage "/gwangjin-gu/course-guide/" "코스 선택 안내 | 광진구 방문 마사지 코스 기준" "광진구 방문 마사지 코스 선택 안내입니다. 피로 회복, 아로마, 스포츠, 커플·가족, 단체 관리 선택 기준을 확인하세요." "코스 선택 안내" "코스 선택 안내는 특정 코스를 밀어주는 페이지가 아니라 현재 컨디션과 이용 목적에 맞는 판단 기준을 제공하는 페이지입니다." @(
+  @{ Title="컨디션 기준"; Texts=@("피로가 누적된 날, 부드러운 관리가 필요한 날, 운동 후 뭉침이 있는 날은 선택 기준이 다릅니다. 상담 단계에서 현재 상태를 간단히 설명하면 코스 안내가 더 정확해집니다.") },
+  @{ Title="이용 환경 기준"; Texts=@("혼자 이용하는지, 커플·가족이 함께 이용하는지, 기업·단체 일정인지에 따라 필요한 시간과 인원이 달라집니다. 방문 장소의 공간 조건도 함께 확인합니다.") },
+  @{ Title="가격과 시간 확인"; Texts=@("코스별 시간과 가격은 상담 기준으로 안내합니다. 방문 위치, 시간대, 인원에 따라 최종 확인이 필요할 수 있으므로 예약 전 다시 확인하는 것이 좋습니다.") },
+  @{ Title="세부 코스 연결"; Texts=@(@('<a href="/course/fatigue/">피로 회복 관리</a>', '<a href="/course/aroma/">아로마 관리</a>', '<a href="/course/sports/">스포츠 관리</a>', '<a href="/course/price/">가격 안내</a>')) }
+) @(@("처음 이용하면 어떤 코스가 좋나요?", "현재 컨디션, 선호 압, 이용 시간, 방문 환경을 기준으로 상담 후 안내받는 것이 좋습니다."), @("코스 선택 후 변경할 수 있나요?", "배정 전이라면 상황에 따라 조정할 수 있으나, 예약 상황에 따라 달라질 수 있습니다."))
+
+GwangjinSubPage "/gwangjin-gu/checklist/" "이용 전 확인사항 | 광진구 방문 마사지 예약 체크리스트" "광진구 방문 마사지 이용 전 확인사항입니다. 정확한 주소, 출입 방법, 주차 가능 여부, 연락 가능 상태, 금지행위를 확인하세요." "이용 전 확인사항" "이용 전 확인사항 페이지는 예약자가 상담 전에 준비할 정보를 한곳에 정리해 불필요한 재확인을 줄이는 역할을 합니다." @(
+  @{ Title="주소와 출입 정보"; Texts=@("정확한 주소, 건물명, 호수, 공동현관 출입 방법은 예약 가능 여부를 확인하는 기본 정보입니다. 역명이나 동명만으로는 실제 방문 동선을 확정하기 어렵습니다.") },
+  @{ Title="방문 환경"; Texts=@("조용한 공간 확보, 주차 가능 여부, 엘리베이터 이용 가능 여부, 연락 가능한 상태를 미리 확인해 주세요. 현장 안내가 늦어지면 예약 시간이 밀릴 수 있습니다.") },
+  @{ Title="이용 기준"; Texts=@("금지행위 안내와 위생 및 안전 기준은 예약 전 반드시 확인하는 것이 좋습니다. 건전한 서비스 범위를 벗어난 요청은 제공하지 않습니다.") },
+  @{ Title="바로가기"; Texts=@(@('<a href="/guide/safety/">위생 및 안전 기준</a>', '<a href="/guide/notice/">금지행위 안내</a>', '<a href="/reservation/">예약안내</a>')) }
+) @(@("정확한 주소를 꼭 알려야 하나요?", "네. 실제 방문 가능 여부는 상세 주소와 출입 조건을 기준으로 확인합니다."), @("주차 정보도 필요한가요?", "방문 환경에 따라 필요할 수 있으므로 가능 여부를 미리 알려주시면 좋습니다."))
+
+GwangjinSubPage "/gwangjin-gu/faq/" "자주 묻는 질문 | 광진구 방문 마사지 예약 FAQ" "광진구 방문 마사지 자주 묻는 질문입니다. 가능 지역, 역세권, 당일 예약, 준비사항, 코스 선택 기준을 확인하세요." "자주 묻는 질문" "FAQ 페이지는 실제 예약 전 많이 확인하는 질문을 광진구 생활권 기준으로 정리한 안내 페이지입니다." @(
+  @{ Title="가능 지역 질문"; Texts=@("광진구 전 지역 방문 가능 여부는 예약 시간, 정확한 위치, 배정 상황에 따라 달라질 수 있습니다. 중곡동, 구의동, 자양동, 화양동 등 주요 생활권을 기준으로 안내합니다.") },
+  @{ Title="역세권 질문"; Texts=@("건대입구역, 군자역, 구의역, 강변역 등 주요 역세권은 메뉴에 짧은 역명으로 표시하고, 상세 페이지에서 위치 기준 안내를 제공합니다.") },
+  @{ Title="예약과 준비"; Texts=@("당일 예약은 시간대와 배정 상황에 따라 달라질 수 있습니다. 정확한 주소, 출입 방법, 주차 가능 여부, 연락 가능 상태를 미리 확인하면 상담이 원활합니다.") },
+  @{ Title="관련 페이지"; Texts=@(@('<a href="/gwangjin-gu/hours/">예약 가능 시간</a>', '<a href="/gwangjin-gu/checklist/">이용 전 확인사항</a>', '<a href="/gwangjin-gu/stations/">지하철역 인근 안내</a>')) }
+) @(@("광진구 전 지역 방문이 가능한가요?", "예약 시간, 정확한 위치, 배정 상황에 따라 가능 여부가 달라질 수 있습니다."), @("당일 예약도 가능한가요?", "가능할 수 있지만 저녁 시간대와 주말은 사전 예약을 권장합니다."))
 
 $areaItems = @(@{Href="/gwangjin-gu/area/";Kicker="ALL";Title="광진구 전체";Text="광진구 가능 지역 전체 보기"})
 foreach ($r in $Regions) { $areaItems += @{Href="/gwangjin-gu/$($r.Slug)/";Kicker="AREA";Title=$r.Name;Text=$r.Summary} }
