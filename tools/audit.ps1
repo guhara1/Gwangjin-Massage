@@ -35,6 +35,7 @@ function Shingles($s) {
 }
 
 $badLen = @($Pages | Where-Object { $_.Chars -lt 2000 -or $_.Chars -gt 2500 })
+$longDesc = @($Pages | Where-Object { $_.Desc.Length -gt 80 })
 $dupeTitles = @($Pages | Group-Object Title | Where-Object { $_.Count -gt 1 })
 $dupeDesc = @($Pages | Group-Object Desc | Where-Object { $_.Count -gt 1 })
 $badMenu = @($Pages | Where-Object {
@@ -75,6 +76,7 @@ for ($i = 0; $i -lt $region.Count; $i++) {
   MinChars = ($Pages | Measure-Object Chars -Minimum).Minimum
   MaxChars = ($Pages | Measure-Object Chars -Maximum).Maximum
   LengthBad = $badLen.Count
+  DescriptionsOver80 = $longDesc.Count
   DuplicateTitles = $dupeTitles.Count
   DuplicateDescriptions = $dupeDesc.Count
   BadMenuFiles = $badMenu.Count
@@ -83,7 +85,7 @@ for ($i = 0; $i -lt $region.Count; $i++) {
   MostSimilarPair = $pair
 }
 
-if ($badLen.Count -or $dupeTitles.Count -or $dupeDesc.Count -or $badMenu.Count) {
+if ($badLen.Count -or $longDesc.Count -or $dupeTitles.Count -or $dupeDesc.Count -or $badMenu.Count) {
   exit 1
 }
 

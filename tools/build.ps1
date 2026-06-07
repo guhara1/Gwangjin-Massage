@@ -63,6 +63,16 @@ $Courses = @(
   @{ Slug = "group"; Name = "기업·단체 관리"; Desc = "행사, 복지, 단체 예약은 일정과 인원 확인 후 안내합니다." }
 )
 
+$DongMetaNearby = @{
+  "junggok-dong" = "중곡역·군자역 인근"
+  "gunja-dong" = "군자역·세종대 생활권"
+  "neung-dong" = "어린이대공원역 인근"
+  "hwayang-dong" = "건대입구역·화양사거리 인근"
+  "guui-dong" = "구의역·광진구청 인근"
+  "gwangjang-dong" = "광나루역·아차산 인근"
+  "jayang-dong" = "뚝섬유원지역·건대입구역 인근"
+}
+
 function E([string]$Text) {
   return [System.Net.WebUtility]::HtmlEncode($Text)
 }
@@ -952,7 +962,7 @@ $(PriceTable)
 <section class="block"><div class="wrap content"><span class="eyebrow">FAQ</span><h2 class="sec">광진 출장마사지 자주 묻는 질문</h2><details><summary>광진구 전 지역 방문이 가능한가요?</summary><p>예약 시간, 정확한 위치, 배정 상황에 따라 가능 여부가 달라질 수 있습니다. 중곡동, 구의동, 자양동, 화양동 등 주요 생활권을 기준으로 안내드립니다.</p></details><details><summary>건대입구역이나 군자역 근처도 가능한가요?</summary><p>건대입구역, 군자역, 구의역, 강변역 등 광진구 주요 역세권은 예약 시 위치를 기준으로 방문 가능 여부를 확인합니다.</p></details><details><summary>당일 예약도 가능한가요?</summary><p>당일 예약은 시간대와 배정 상황에 따라 달라질 수 있습니다. 저녁 시간대와 주말은 사전 예약을 권장드립니다.</p></details><details><summary>예약 전 준비할 것이 있나요?</summary><p>정확한 주소, 출입 방법, 주차 가능 여부, 조용한 공간을 미리 확인해주시면 원활한 이용에 도움이 됩니다.</p></details></div></section>
 <section class="block"><div class="wrap content"><span class="eyebrow">CTA</span><h2 class="sec">광진 출장마사지 예약문의</h2><p class="lead">광진구 방문 가능 여부는 희망 시간과 위치에 따라 달라질 수 있습니다. 지역, 시간, 코스를 알려주시면 예약 가능 여부를 안내드립니다.</p><div class="actions"><a class="btn primary" href="tel:$PhoneTel">전화 문의</a><a class="btn" href="/customer/contact/">카카오톡 문의</a><a class="btn" href="/course/">코스 확인하기</a></div></div></section>
 "@
-Write-Page "/" "$PrimaryKeyword | 광진구 방문 마사지 예약 안내" "광진 출장마사지 안내 페이지입니다. 중곡동, 구의동, 자양동, 화양동, 건대입구역, 군자역 인근 방문 가능 지역과 예약 전 확인사항을 확인해보세요." "home" $homeBody
+Write-Page "/" "$PrimaryKeyword | 광진구 방문 마사지 예약 안내" "광진 출장마사지 안내. 광진구 주요 생활권 방문 가능 지역과 예약 전 확인사항을 확인하세요." "home" $homeBody
 
 $sections = @(
   @{ Title="서비스 안내"; Texts=@("광진구 전역을 대상으로 방문 마사지 예약 안내를 제공합니다. 서비스 범위, 상담 기준, 위생과 안전, 예약 전 확인사항을 순서대로 확인할 수 있습니다.") },
@@ -1015,7 +1025,8 @@ foreach ($r in $Regions) {
   Write-Page "/gwangjin-gu/$($r.Slug)/" "$($r.H1) | 플러스 마사지" "$($r.Name) 방문 마사지 안내. $($r.Summary)" "area" ((StandardContent "AREA" "<span class=""grad"">$($r.H1)</span>" $r.Summary $sections @(@("$($r.Name) 예약은 어떻게 하나요?", "전화 상담 시 위치와 희망 시간을 알려주시면 가능 여부를 안내합니다."))) + (PriceTable))
   foreach ($d in $r.Dongs) {
     $title = "$($d.Title) | 광진구 $($d.Name) 방문 마사지 예약 안내"
-    $desc = "광진구 $($d.Name) 출장마사지 안내 페이지입니다. $($d.Landmarks) 방문 가능 지역과 예약 가능 시간, 코스 선택 기준, 이용 전 확인사항을 확인해보세요."
+    $nearby = $DongMetaNearby[$d.Slug]
+    $desc = "광진구 $($d.Name) 출장마사지 안내. $nearby 예약 시간과 준비사항을 확인하세요."
     Write-Page "/gwangjin-gu/$($d.Slug)/" $title $desc "area" (Dong-Content $d $r)
   }
 }
