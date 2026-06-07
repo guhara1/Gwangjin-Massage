@@ -7,8 +7,10 @@ on:
     paths:
       - "**/*.html"
       - "sitemap.xml"
+      - "rss.xml"
       - "8b6f9d2a4f6a4a9ca710d98f5e21c7be.txt"
       - "tools/indexnow-submit.ps1"
+      - "tools/build.ps1"
       - ".github/workflows/indexnow.yml"
   workflow_dispatch:
 
